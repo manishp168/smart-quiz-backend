@@ -3,7 +3,7 @@ import express from "express";
 import cors from 'cors';
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173", "http://mr-ketan.xyz", "https://mr-ketan.xyz"];
+const allowedOrigins = ["http://localhost:5173", "http://earningzone.shop", "https://earningzone.shop"];
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
