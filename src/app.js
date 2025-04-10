@@ -3,8 +3,15 @@ import express from "express";
 import cors from 'cors';
 const app = express();
 
+const allowedOrigins = ["http://localhost:5173", "http://mr-ketan.xyz", "https://mr-ketan.xyz"];
 app.use(cors({
-    origin: "http://mr-ketan.xyz",
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, origin);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
