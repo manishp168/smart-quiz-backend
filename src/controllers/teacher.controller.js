@@ -180,45 +180,31 @@ const generateQuizHandler = async (req, res) => {
       .status(httpStatus.CONFLICT)
       .json(new ApiError(httpStatus.CONFLICT, "All fields are required"));
   }
-  const prompt = `Generate ${mcqQuestions} multiple-choice questions (MCQs) and ${trueFalseQuestions} true/false questions on the topic of "${topic}" with a difficulty level of "${difficulty}". 
+  const prompt = `
+You are an expert quiz generator. Generate ${mcqQuestions} multiple-choice questions (MCQs) and ${trueFalseQuestions} true/false questions on the topic of "${topic}" with a difficulty level of "${difficulty}".
 
 For MCQs:
-- Each question should have **4 options**, with only **one correct answer**.
-- Ensure the **correct option is placed at a very random position {shuffle hardly}** instead of always being the first option.
+- Each question must have **4 options** with only **one correct answer**.
+- **Ensure the correct answer appears in a truly random position**. Use internal logic to simulate randomness, like assigning a random index from 0–3 for the correct answer in each question.
+- Avoid patterns like always placing the correct answer first. You must shuffle hard.
 
 For TRUE/FALSE:
-- Each question should have **two options**: "TRUE" and "FALSE", with one correct answer.
+- Each question must have **2 options**: "TRUE" and "FALSE", with only one correct answer randomly assigned as either TRUE or FALSE.
 
-Format the response as a JSON array where each question is an object. 
+Format the response as a **JSON array**, where each question is an object.
 
-Each question object should have the following fields:
+Each question object must include:
 - "question": The question text.
 - "type": Either "MCQ" or "TRUE/FALSE".
-- "options": An array of objects, where each object has:
+- "options": An array of objects with:
   - "option": The text of the option.
-  - "isCorrect": A boolean value indicating if the option is correct.
+  - "isCorrect": Boolean (true only for the correct answer)
 
-Example:
-[
-{
-  "question": "What is the type of this variable? int x = 10;",
-  "type": "MCQ",
-  "options": [
-    { "option": "Boolean", "isCorrect": false },
-    { "option": "Integer", "isCorrect": true },
-    { "option": "String", "isCorrect": false },
-    { "option": "None of the above", "isCorrect": false }
-  ]
-},
-{
-  "question": "int x = 10; x is an integer variable?",
-  "type": "TRUE/FALSE",
-  "options": [
-    { "option": "FALSE", "isCorrect": false },
-    { "option": "TRUE", "isCorrect": true }
-  ]
-}
-]`;
+Ensure the correct option index is **evenly distributed** across MCQs. For example, avoid making 6 out of 8 questions have the correct answer in the same index.
+
+Return only the final JSON array. No explanations or notes. Keep it clean and production-ready.
+`;
+
 
   try {
     const response = await openai.chat.completions.create({
