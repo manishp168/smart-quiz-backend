@@ -184,7 +184,7 @@ const generateQuizHandler = async (req, res) => {
 
 For MCQs:
 - Each question should have **4 options**, with only **one correct answer**.
-- Ensure the **correct option is placed at a random position** instead of always being the first option.
+- Ensure the **correct option is placed at a very random position {shuffle hardly}** instead of always being the first option.
 
 For TRUE/FALSE:
 - Each question should have **two options**: "TRUE" and "FALSE", with one correct answer.
