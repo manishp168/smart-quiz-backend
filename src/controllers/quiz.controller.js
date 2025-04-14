@@ -32,21 +32,25 @@ const getQuizHandler = async (req, res) => {
 const insertQuizHandler = async (req, res) => {
   const user = req.user;
   const { userQuizData, title, timeLimit, timeTaken, quizId } = req.body;
-
+  
   let totalCorrect = 0;
   let totalIncorrect = 0;
 
+  console.log(userQuizData)
   userQuizData.forEach((question) => {
-    question.options.forEach((option) => {
-      if (option.isCorrect === true && option.selectedAnswer === true) {
-        totalCorrect++;
-      } else if(option.isCorrect === true && option.selectedAnswer === false) {
-        totalIncorrect++;
-      }
-    });
+    if (question.isAttempted) {
+      question.options.forEach((option) => {
+        if (option.isCorrect === true && option.selectedAnswer === true) {
+          totalCorrect++;
+        } else if (option.isCorrect === true && option.selectedAnswer === false) {
+          totalIncorrect++;
+        }
+      });
+    } else {
+      totalIncorrect++;
+    }
   });
 
- 
   try {
     let findQuiz = await QuizAttempt.findOne({
       studentId: user._id,
@@ -59,11 +63,12 @@ const insertQuizHandler = async (req, res) => {
         .json(
           new ApiResponse(
             httpStatus.BAD_REQUEST,
-            "You are already participated in this quiz",
+            "You have already participated in this quiz",
             findQuiz
           )
         );
     }
+
     let insertQuiz = await QuizAttempt.create({
       studentId: user._id,
       quizId,
@@ -74,10 +79,11 @@ const insertQuizHandler = async (req, res) => {
       totalCorrect: totalCorrect,
       totalIncorrect: totalIncorrect,
     });
+
     if (!insertQuiz) {
       return res
         .status(httpStatus.BAD_REQUEST)
-        .json(new ApiError(httpStatus.BAD_REQUEST, "Quiz not inserted"));
+        .json(new ApiError(httpStatus.BAD_REQUEST, "Failed to submit quiz"));
     }
 
     let quizDetail = await Quiz.findById(quizId);
@@ -85,50 +91,41 @@ const insertQuizHandler = async (req, res) => {
       quizId: quizDetail._id,
     });
 
-    if (quizDetail) {
-      console.log("HA TRUE HAI")
-    }
-    let findAvarageScore = await QuizAttempt.aggregate([
+    let findAverageScore = await QuizAttempt.aggregate([
       {
         $match: { quizId: quizId },
       },
       {
         $group: {
           _id: "$quizId",
-          avarageScore: { $avg: "$totalCorrect" },
+          averageScore: { $avg: "$totalCorrect" },
         },
       },
     ]);
-    let avarageScore = findAvarageScore.length > 0 ? findAvarageScore[0].avarageScore : 0;
-    console.log("AVARAGE SCORE: ", avarageScore)
-    let updateQUiz = await Quiz.updateOne(
+
+    let averageScore = findAverageScore.length > 0 ? findAverageScore[0].averageScore : 0;
+
+    let updateQuiz = await Quiz.updateOne(
       { _id: quizDetail._id },
       {
         $set: {
           totalParticipated: quizDetail.totalParticipated + 1,
-          avarageScore,
+          averageScore,
         },
       }
     );
-    if (updateQUiz) {
-      console.log("QUIZ UPDATED")
-      console.log(updateQUiz)
-    }else{
-      console.log("not updated")
-    }
-    
-    // console.log(insertQuiz);
+
     return res
       .status(httpStatus.OK)
-      .json(new ApiResponse(httpStatus.OK, "Quiz inserted", insertQuiz));
+      .json(new ApiResponse(httpStatus.OK, "Quiz submitted successfully", insertQuiz));
+
   } catch (error) {
-    // console.log(error);
-    // console.log(error.message)
     res
       .status(httpStatus.INTERNAL_SERVER_ERROR)
-      .json(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message));
+      .json(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "An error occurred while submitting the quiz"));
   }
 };
+
 
 const getLiveQuizzes = async (req, res) => {
   console.log("Yaha aarha hai");

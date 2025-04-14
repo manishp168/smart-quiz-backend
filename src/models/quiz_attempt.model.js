@@ -34,10 +34,13 @@ const quizAttemptSchema = new mongoose.Schema({
             required: true
           },
           selectedAnswer: {
-            type: Boolean,
-            required: true
-          }
+            type: Boolean
+          }  
         }],
+        isAttempted: {
+          type: Boolean,
+          required: true
+        }
       }],
     timeLimit: {
         type: Number,
