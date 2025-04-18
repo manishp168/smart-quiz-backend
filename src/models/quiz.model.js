@@ -46,7 +46,7 @@ const quizSchema = new mongoose.Schema({
       type: Boolean,
       default: false, // Quiz initially unpublished rahega
     },
-    avarageScore: {
+    averageScore: {
       type: Number,
       default: 0
     },
