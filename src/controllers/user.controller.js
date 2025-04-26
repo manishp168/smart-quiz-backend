@@ -34,7 +34,7 @@ const generateTokens = async (userId) => {
 const registerHandler = async (req, res, next) => {
   // console.log(req.body);
   try {
-    const { name, email, password, semester } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -58,7 +58,7 @@ const registerHandler = async (req, res, next) => {
       password,
       isVerified: true,
       role: "student",
-      semester: semester,
+      semester: role,
     });
 
     if (!userCreate) {
